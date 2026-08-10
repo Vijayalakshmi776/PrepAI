@@ -11,7 +11,7 @@ from app.core.config import settings
 
 router = APIRouter()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/auth/token')
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 class Token(BaseModel):
