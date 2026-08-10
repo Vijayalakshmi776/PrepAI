@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     API_PREFIX: str = '/api'
@@ -8,8 +8,6 @@ class Settings(BaseSettings):
     DATABASE_URL: str = 'postgresql+psycopg://user:password@localhost/prepai'
     GEMINI_API_KEY: str | None = None
 
-    class Config:
-        env_file = '.env'
-        env_file_encoding = 'utf-8'
+    model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
 
 settings = Settings()
