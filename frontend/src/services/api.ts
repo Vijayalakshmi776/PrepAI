@@ -6,6 +6,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8010
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: `${API_BASE_URL}/api`,
+  timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -64,7 +65,7 @@ function buildErrorMessage(error: unknown): string {
     if (error.response?.status === 409) return 'An account with this email already exists.';
     if (error.response?.status === 422) return 'Invalid form input or parameter format. Please check your submission.';
     if (error.response?.status && error.response.status >= 500) return 'The server encountered an error processing your request. Please try again shortly.';
-    if (error.code === 'ERR_NETWORK' || !error.response) return 'Unable to reach the backend at http://127.0.0.1:8010. Please ensure the server is running.';
+    if (error.code === 'ERR_NETWORK' || !error.response) return `Unable to reach the backend at ${API_BASE_URL}. The server may be starting up — please try again in a few seconds.`;
   }
   return 'Something went wrong. Please try again.';
 }
