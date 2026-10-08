@@ -13,7 +13,7 @@ class AIConversation(Base, TimestampMixin):
     topic = Column(String(128), nullable=True)
     conversation_type = Column(String(64), nullable=True)
     messages = Column(Text, nullable=True)
-    metadata = Column(Text, nullable=True)
+    metadata_ = Column('metadata', Text, nullable=True)
     status = Column(String(64), nullable=True)
 
     user = relationship('User', back_populates='ai_conversations')

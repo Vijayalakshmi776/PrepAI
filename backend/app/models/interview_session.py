@@ -12,6 +12,8 @@ class InterviewSession(Base, TimestampMixin):
     company_id = Column(ForeignKey('companies.id', ondelete='SET NULL'), nullable=True, index=True)
     pattern_id = Column(ForeignKey('company_interview_patterns.id', ondelete='SET NULL'), nullable=True, index=True)
     title = Column(String(128), nullable=False)
+    role = Column(String(128), nullable=False, default='Software Engineer')
+    difficulty = Column(String(64), nullable=False, default='Medium')
     completed = Column(Boolean, nullable=False, default=False)
 
     user = relationship('User', back_populates='interview_sessions')

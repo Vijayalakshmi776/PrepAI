@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '../../components/ui/Button';
+import { onboardingApi } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 
 const steps = [
   {
@@ -34,26 +37,38 @@ const steps = [
     options: ['Beginner', 'Intermediate', 'Advanced'],
   },
   {
+    id: 'interviewDifficulty',
+    question: 'Select Question/Interview Difficulty',
+    options: ['Easy', 'Medium', 'Hard'],
+  },
+  {
     id: 'skills',
     question: 'Which skills are you comfortable with?',
     options: ['Python', 'Java', 'JavaScript', 'React', 'HTML/CSS', 'SQL', 'C/C++', 'Data Structures', 'Machine Learning', 'AI', 'Communication', 'Aptitude', 'Problem Solving'],
     multi: true,
   },
-];
+] as const;
+
+type StepId = (typeof steps)[number]['id'];
 
 export function OnboardingPage() {
+  const navigate = useNavigate();
+  useAuth(); // ensures the onboarding page is only accessible within an authenticated context
   const [stepIndex, setStepIndex] = useState(0);
   const [values, setValues] = useState<Record<string, string | string[]>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const step = steps[stepIndex];
+  const isLastStep = stepIndex === steps.length - 1;
 
   const selectOption = (option: string) => {
     setValues((current) => {
-      if (step.multi) {
-        const currentValues = Array.isArray(current[step.id]) ? current[step.id] : [];
+      if ('multi' in step && step.multi) {
+        const currentValues = Array.isArray(current[step.id]) ? (current[step.id] as string[]) : [];
         const nextValues = currentValues.includes(option)
-          ? (currentValues.filter((value) => value !== option) as string[])
-          : ([...currentValues, option] as string[]);
+          ? currentValues.filter((value) => value !== option)
+          : [...currentValues, option];
         return { ...current, [step.id]: nextValues };
       }
 
@@ -62,13 +77,48 @@ export function OnboardingPage() {
   };
 
   const selected = values[step.id];
-  const isNextEnabled = step.multi ? Array.isArray(selected) && selected.length > 0 : typeof selected === 'string';
+  const isNextEnabled =
+    'multi' in step && step.multi
+      ? Array.isArray(selected) && selected.length > 0
+      : typeof selected === 'string';
+
+  const handleFinish = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    const payload = {
+      user_type: (values.userType as string) || '',
+      career_goal: (values.careerGoal as string) || '',
+      company_type: (values.companyType as string) || '',
+      dream_company: (values.dreamCompany as string) || '',
+      target_role: (values.targetRole as string) || '',
+      current_level: (values.level as string) || '',
+      interview_difficulty: (values.interviewDifficulty as string) || 'Medium',
+      skills: Array.isArray(values.skills) ? values.skills : [],
+    };
+
+    try {
+      await onboardingApi.submit(payload);
+      navigate('/dashboard');
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to save onboarding data. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleNext = () => {
+    if (isLastStep) {
+      void handleFinish();
+    } else {
+      setStepIndex((index) => index + 1);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-5xl rounded-[2rem] border border-slate-200 bg-white p-8 shadow-soft sm:p-10">
       <div className="mb-8 flex flex-col gap-3">
         <p className="text-sm font-semibold uppercase tracking-[0.3em] text-primary">Onboarding</p>
-        <h1 className="text-3xl font-bold text-slate-950">Let’s tailor your PrepAI journey.</h1>
+        <h1 className="text-3xl font-bold text-slate-950">Let's tailor your PrepAI journey.</h1>
         <p className="max-w-2xl text-sm leading-7 text-slate-600">
           Answer a few quick questions so the platform can recommend company-specific practice, interview patterns, and career-ready feedback.
         </p>
@@ -80,12 +130,15 @@ export function OnboardingPage() {
             <p className="text-sm font-semibold text-slate-800">Step {stepIndex + 1} of {steps.length}</p>
             <h2 className="mt-2 text-2xl font-bold text-slate-950">{step.question}</h2>
           </div>
-          <p className="text-sm text-slate-600">Select {step.multi ? 'all that apply' : 'one option'}</p>
+          <p className="text-sm text-slate-600">Select {'multi' in step && step.multi ? 'all that apply' : 'one option'}</p>
         </div>
 
         <motion.div layout className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {step.options.map((option) => {
-            const isActive = step.multi ? Array.isArray(selected) && selected.includes(option) : selected === option;
+            const isActive =
+              'multi' in step && step.multi
+                ? Array.isArray(selected) && selected.includes(option)
+                : selected === option;
             return (
               <button
                 key={option}
@@ -99,10 +152,14 @@ export function OnboardingPage() {
           })}
         </motion.div>
 
+        {submitError ? (
+          <p className="mt-4 text-sm font-medium text-rose-600">{submitError}</p>
+        ) : null}
+
         <div className="mt-8 flex items-center justify-between gap-4">
           <button
             type="button"
-            disabled={stepIndex === 0}
+            disabled={stepIndex === 0 || isSubmitting}
             onClick={() => setStepIndex((index) => Math.max(0, index - 1))}
             className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -110,20 +167,16 @@ export function OnboardingPage() {
           </button>
           <Button
             type="button"
-            className="min-w-[160px]"
-            disabled={!isNextEnabled}
-            onClick={() => {
-              if (stepIndex < steps.length - 1) {
-                setStepIndex((index) => index + 1);
-              }
-            }}
+            className="min-w-[180px]"
+            disabled={!isNextEnabled || isSubmitting}
+            onClick={handleNext}
           >
-            {stepIndex === steps.length - 1 ? 'Finish onboarding' : 'Next question'}
+            {isSubmitting ? 'Saving...' : isLastStep ? 'Finish onboarding' : 'Next question'}
           </Button>
         </div>
       </div>
 
-      {stepIndex === steps.length - 1 && (
+      {isLastStep && (
         <div className="mt-10 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
           <h3 className="text-xl font-semibold text-slate-950">Onboarding summary</h3>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">

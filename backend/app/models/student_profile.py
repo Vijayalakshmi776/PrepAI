@@ -15,6 +15,7 @@ class StudentProfile(Base, TimestampMixin):
     target_role = Column(String(128), nullable=True)
     target_company = Column(String(128), nullable=True)
     current_level = Column(String(64), nullable=True)
+    interview_difficulty = Column(String(64), nullable=True, default='Medium')
     career_goal = Column(String(128), nullable=True)
 
     user = relationship('User', back_populates='profile')

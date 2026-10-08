@@ -5,7 +5,10 @@ passlib[bcrypt]
 sqlalchemy
 alembic
 pydantic
+pydantic[email]
 pydantic-settings
 python-dotenv
 psycopg[binary]
 httpx
+python-multipart
+pypdf

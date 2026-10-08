@@ -9,6 +9,8 @@ import { RoadmapPage } from './features/roadmap/RoadmapPage';
 import { ResumePage } from './features/resume/ResumePage';
 import { AnalysisPage } from './features/analysis/AnalysisPage';
 import { Layout } from './layouts/Layout';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
   const location = useLocation();
@@ -19,12 +21,12 @@ function App() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth/*" element={<AuthPage />} />
-          <Route path="/onboarding" element={<OnboardingPage />} />
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/interview" element={<MockInterviewPage />} />
-          <Route path="/roadmap" element={<RoadmapPage />} />
-          <Route path="/resume" element={<ResumePage />} />
-          <Route path="/analysis" element={<AnalysisPage />} />
+          <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/interview" element={<ProtectedRoute><MockInterviewPage /></ProtectedRoute>} />
+          <Route path="/roadmap" element={<ProtectedRoute><RoadmapPage /></ProtectedRoute>} />
+          <Route path="/resume" element={<ProtectedRoute><ErrorBoundary><ResumePage /></ErrorBoundary></ProtectedRoute>} />
+          <Route path="/analysis" element={<ProtectedRoute><AnalysisPage /></ProtectedRoute>} />
         </Routes>
       </AnimatePresence>
     </Layout>

@@ -9,6 +9,9 @@ class InterviewQuestionBase(BaseModel):
     round_id: Optional[str] = None
     skill_id: Optional[str] = None
     prompt: str
+    question_type: str = "text"
+    options: Optional[list[str]] = None
+    correct_answer: Optional[str] = None
     order: Optional[int] = 0
 
 

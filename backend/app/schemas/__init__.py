@@ -1,5 +1,13 @@
 from app.schemas.base import ORMBase
-from app.schemas.user import UserBase, UserCreate, UserRead, UserUpdate
+from app.schemas.user import (
+    Token,
+    UserBase,
+    UserCreate,
+    UserLogin,
+    UserRead,
+    UserRegister,
+    UserUpdate,
+)
 from app.schemas.student_profile import StudentProfileBase, StudentProfileCreate, StudentProfileRead, StudentProfileUpdate
 from app.schemas.company import CompanyBase, CompanyCreate, CompanyRead, CompanyUpdate
 from app.schemas.company_interview_pattern import CompanyInterviewPatternBase, CompanyInterviewPatternCreate, CompanyInterviewPatternRead, CompanyInterviewPatternUpdate

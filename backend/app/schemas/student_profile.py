@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class StudentProfileBase(BaseModel):
@@ -11,6 +12,7 @@ class StudentProfileBase(BaseModel):
     target_role: Optional[str] = None
     target_company: Optional[str] = None
     current_level: Optional[str] = None
+    interview_difficulty: Optional[str] = 'Medium'
     career_goal: Optional[str] = None
 
 
@@ -25,14 +27,14 @@ class StudentProfileUpdate(BaseModel):
     target_role: Optional[str] = None
     target_company: Optional[str] = None
     current_level: Optional[str] = None
+    interview_difficulty: Optional[str] = 'Medium'
     career_goal: Optional[str] = None
 
 
 class StudentProfileRead(StudentProfileBase):
-    id: str
-    user_id: str
+    id: UUID
+    user_id: UUID
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

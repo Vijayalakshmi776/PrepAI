@@ -1,8 +1,14 @@
 from logging.config import fileConfig
+import sys
+from pathlib import Path
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
+
+backend_dir = Path(__file__).resolve().parents[1]
+if str(backend_dir) not in sys.path:
+    sys.path.insert(0, str(backend_dir))
 
 from app.core.config import settings
 from app.db.base import Base
@@ -10,7 +16,10 @@ import app.models  # ensure all model metadata is imported for migrations
 
 config = context.config
 fileConfig(config.config_file_name)
-config.set_main_option('sqlalchemy.url', settings.DATABASE_URL)
+config.set_main_option(
+    'sqlalchemy.url',
+    settings.DATABASE_URL.replace('%', '%%')
+)
 
 target_metadata = Base.metadata
 

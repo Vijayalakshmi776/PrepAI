@@ -1,7 +1,7 @@
-from datetime import datetime
+﻿from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class AIConversationBase(BaseModel):
@@ -10,7 +10,7 @@ class AIConversationBase(BaseModel):
     topic: Optional[str] = None
     conversation_type: Optional[str] = None
     messages: Optional[str] = None
-    metadata: Optional[str] = None
+    metadata_: Optional[str] = None
     status: Optional[str] = None
 
 
@@ -31,5 +31,4 @@ class AIConversationRead(AIConversationBase):
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
