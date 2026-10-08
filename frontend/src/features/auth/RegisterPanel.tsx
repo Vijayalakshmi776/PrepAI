@@ -1,10 +1,12 @@
 import { FormEvent, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
+import { useAuth } from '../../contexts/AuthContext';
 import { authApi } from '../../services/api';
 
 export function RegisterPanel() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +30,9 @@ export function RegisterPanel() {
     setIsSubmitting(true);
     try {
       await authApi.register({ email, full_name: fullName, password });
-      navigate('/auth/login');
+      const tokens = await authApi.login({ email, password });
+      await login(tokens);
+      navigate('/onboarding', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to create your account.');
     } finally {

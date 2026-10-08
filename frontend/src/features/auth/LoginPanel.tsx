@@ -2,7 +2,7 @@ import { FormEvent, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
-import { authApi } from '../../services/api';
+import { authApi, onboardingApi } from '../../services/api';
 
 export function LoginPanel() {
   const navigate = useNavigate();
@@ -13,8 +13,7 @@ export function LoginPanel() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // If user was redirected here from a protected route, send them back there after login
-  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? '/dashboard';
+  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,7 +28,22 @@ export function LoginPanel() {
     try {
       const tokens = await authApi.login({ email, password });
       await login(tokens);
-      navigate(from, { replace: true });
+
+      if (from && from !== '/auth/login' && from !== '/auth/register') {
+        navigate(from, { replace: true });
+        return;
+      }
+
+      try {
+        const profile = await onboardingApi.getMyProfile();
+        if (profile && profile.target_role) {
+          navigate('/dashboard', { replace: true });
+        } else {
+          navigate('/onboarding', { replace: true });
+        }
+      } catch {
+        navigate('/onboarding', { replace: true });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to log in.');
     } finally {
